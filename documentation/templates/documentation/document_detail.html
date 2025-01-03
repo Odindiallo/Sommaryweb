@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ document.title }} - Documentation System{% endblock %}
+
+{% block content %}
+<div class="flex min-h-screen bg-gray-100">
+    <!-- Sidebar Navigation -->
+    <div class="w-64 bg-white border-r border-gray-200 overflow-y-auto">
+        <div class="px-4 py-5">
+            <nav class="space-y-1">
+                {% with hierarchy=document.get_hierarchy %}
+                    {% if hierarchy.parent %}
+                        <div class="mb-4">
+                            <a href="{{ hierarchy.parent.get_absolute_url }}" 
+                               class="text-sm font-medium text-gray-500 hover:text-gray-900">
+                                ← Back to {{ hierarchy.parent.title }}
+                            </a>
+                        </div>
+                    {% endif %}
+
+                    <!-- Current Section -->
+                    <div class="mb-4">
+                        <h3 class="font-medium text-gray-900 {% if document.is_index %}text-lg{% else %}text-base{% endif %}">
+                            {{ document.title }}
+                        </h3>
+                        
+                        {% if hierarchy.siblings %}
+                            <ul class="mt-2 space-y-1">
+                                {% for sibling in hierarchy.siblings %}
+                                    <li>
+                                        <a href="{{ sibling.get_absolute_url }}"
+                                           class="block px-3 py-2 text-sm rounded-md {% if sibling == document %}bg-gray-100 text-gray-900{% else %}text-gray-600 hover:bg-gray-50 hover:text-gray-900{% endif %}">
+                                            {{ sibling.title }}
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+
+                    {% if hierarchy.children %}
+                        <!-- Sub-sections -->
+                        <div class="mb-4">
+                            <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                On this page
+                            </h4>
+                            <ul class="mt-2 space-y-1">
+                                {% for child in hierarchy.children %}
+                                    <li>
+                                        <a href="{{ child.get_absolute_url }}"
+                                           class="block px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md">
+                                            {{ child.title }}
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                {% endwith %}
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 overflow-y-auto">
+        <div class="max-w-4xl mx-auto px-4 py-8">
+            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                <!-- Document Header -->
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-900">{{ document.title }}</h1>
+                            <div class="mt-2 flex items-center text-sm text-gray-500">
+                                <span>By {{ document.author.username }}</span>
+                                <span class="mx-2">•</span>
+                                <span>{{ document.created_at|date:"F j, Y" }}</span>
+                                {% if document.category %}
+                                    <span class="mx-2">•</span>
+                                    <a href="{% url 'documentation:document_list' %}?category={{ document.category.slug }}" 
+                                       class="text-indigo-600 hover:text-indigo-900">
+                                        {{ document.category.name }}
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if user == document.author or user.is_staff %}
+                            <div class="flex space-x-3">
+                                <a href="{% url 'documentation:document_update' document.slug %}" 
+                                   class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    Edit
+                                </a>
+                                <a href="{% url 'documentation:document_delete' document.slug %}" 
+                                   class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                    Delete
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% if document.tags.all %}
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            {% for tag in document.tags.all %}
+                                <a href="{% url 'documentation:document_list' %}?tag={{ tag.slug }}"
+                                   class="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800 hover:bg-indigo-200">
+                                    {{ tag.name }}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Document Content -->
+                <div class="px-6 py-4 prose max-w-none">
+                    {{ document.content|safe }}
+                </div>
+
+                <!-- Attachments Section -->
+                {% if document.attachments.exists %}
+                    <div class="px-6 py-4 border-t border-gray-200">
+                        <h2 class="text-lg font-medium text-gray-900 mb-4">Attachments</h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {% for attachment in document.attachments.all %}
+                                <div class="relative group bg-white border rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-200">
+                                    <div class="p-4">
+                                        <div class="flex items-start space-x-3">
+                                            <!-- File Icon -->
+                                            <div class="flex-shrink-0">
+                                                {% if attachment.is_image %}
+                                                    <svg class="h-6 w-6 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                                    </svg>
+                                                {% elif attachment.is_pdf %}
+                                                    <svg class="h-6 w-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                                    </svg>
+                                                {% else %}
+                                                    <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                                    </svg>
+                                                {% endif %}
+                                            </div>
+
+                                            <!-- File Info -->
+                                            <div class="flex-1 min-w-0">
+                                                <a href="{{ attachment.file.url }}" 
+                                                   class="text-sm font-medium text-gray-900 hover:text-indigo-600 truncate block"
+                                                   target="_blank"
+                                                   download>
+                                                    {{ attachment.name }}
+                                                </a>
+                                                <p class="text-sm text-gray-500">{{ attachment.human_readable_size }}</p>
+                                            </div>
+
+                                            <!-- Download Button -->
+                                            <div class="flex-shrink-0">
+                                                <a href="{{ attachment.file.url }}" 
+                                                   class="inline-flex items-center p-1.5 border border-transparent rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                                   download>
+                                                    <span class="sr-only">Download {{ attachment.name }}</span>
+                                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                                    </svg>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Documents - Documentation System{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Search and Filter Section -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <form method="get" class="space-y-4">
+            <div class="flex flex-wrap gap-4">
+                <div class="flex-1">
+                    <input type="text" name="q" value="{{ search_query }}" 
+                           class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           placeholder="Search documents...">
+                </div>
+                <div class="w-48">
+                    <select name="category" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                            <option value="{{ category.slug }}" {% if category.slug == selected_category %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    Search
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Document List -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for document in documents %}
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-6">
+                    <h2 class="text-xl font-semibold mb-2">
+                        <a href="{% url 'documentation:document_detail' document.slug %}" class="text-blue-600 hover:text-blue-800">
+                            {{ document.title }}
+                        </a>
+                    </h2>
+                    <p class="text-gray-600 mb-4">{{ document.content|striptags|truncatewords:30 }}</p>
+                    <div class="flex items-center justify-between text-sm text-gray-500">
+                        <span>By {{ document.author.username }}</span>
+                        <span>{{ document.created_at|date:"M d, Y" }}</span>
+                    </div>
+                    {% if document.tags.all %}
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            {% for tag in document.tags.all %}
+                                <span class="px-2 py-1 bg-gray-100 text-gray-600 text-sm rounded-full">{{ tag.name }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-span-full text-center py-8">
+                <p class="text-gray-500">No documents found.</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+        <div class="flex justify-center mt-8 space-x-4">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}&q={{ search_query }}&category={{ selected_category }}"
+                   class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+                    Previous
+                </a>
+            {% endif %}
+            
+            <span class="px-4 py-2 bg-blue-600 text-white rounded-lg">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+            
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&q={{ search_query }}&category={{ selected_category }}"
+                   class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+                    Next
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    {% if user.is_authenticated %}
+        <div class="fixed bottom-8 right-8">
+            <a href="{% url 'documentation:document_create' %}"
+               class="flex items-center justify-center w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

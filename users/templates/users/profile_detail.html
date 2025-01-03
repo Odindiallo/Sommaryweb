@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile_user.get_full_name|default:profile_user.username }}'s Profile{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-100 py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Profile Header -->
+        <div class="bg-white shadow rounded-lg mb-6">
+            <div class="px-4 py-5 sm:p-6">
+                <div class="flex items-center space-x-5">
+                    <div class="flex-shrink-0">
+                        <img class="h-24 w-24 rounded-full object-cover" 
+                             src="{{ profile_user.profile.avatar.url }}" 
+                             alt="{{ profile_user.username }}'s avatar">
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">
+                            {{ profile_user.get_full_name|default:profile_user.username }}
+                        </h1>
+                        <p class="text-sm text-gray-500">Member since {{ profile_user.date_joined|date:"F j, Y" }}</p>
+                        {% if profile_user.profile.location %}
+                            <p class="text-sm text-gray-500">
+                                <span class="font-medium">Location:</span> {{ profile_user.profile.location }}
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if profile_user.profile.bio %}
+                    <div class="mt-4 text-gray-700">
+                        <h3 class="text-lg font-medium">About</h3>
+                        <p class="mt-2">{{ profile_user.profile.bio }}</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- User's Documents -->
+        <div class="bg-white shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <h2 class="text-lg font-medium text-gray-900">Documents</h2>
+                {% if documents %}
+                    <div class="mt-4 space-y-4">
+                        {% for document in documents %}
+                            <div class="border-b border-gray-200 pb-4">
+                                <h3 class="text-lg font-medium">
+                                    <a href="{% url 'documentation:document_detail' document.id %}" 
+                                       class="text-indigo-600 hover:text-indigo-700">
+                                        {{ document.title }}
+                                    </a>
+                                </h3>
+                                <p class="text-sm text-gray-500">
+                                    Created {{ document.created_at|date:"F j, Y" }}
+                                </p>
+                                {% if document.description %}
+                                    <p class="mt-2 text-gray-700">{{ document.description|truncatewords:30 }}</p>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="mt-4 text-gray-500">No documents available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if form.instance.pk %}Edit{% else %}Create{% endif %} Document{% endblock %}
+
+{% block extra_head %}
+{{ form.media }}
+<style>
+    .file-upload {
+        @apply relative border-2 border-dashed border-gray-300 rounded-lg p-6 mt-2;
+    }
+    .file-upload:hover {
+        @apply border-indigo-500;
+    }
+    .file-list {
+        @apply mt-4 space-y-2;
+    }
+    .file-item {
+        @apply flex items-center justify-between p-3 bg-gray-50 rounded-lg;
+    }
+    .file-name {
+        @apply text-sm text-gray-700;
+    }
+    .remove-file {
+        @apply text-red-500 hover:text-red-700;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h1 class="text-2xl font-bold text-gray-900">
+                {% if form.instance.pk %}
+                    Edit Document
+                {% else %}
+                    Create New Document
+                {% endif %}
+            </h1>
+        </div>
+
+        <div class="px-6 py-4">
+            <form method="post" enctype="multipart/form-data" class="space-y-6" id="document-form">
+                {% csrf_token %}
+
+                {# Title Field #}
+                <div>
+                    <label for="{{ form.title.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        Title
+                    </label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                        <p class="mt-2 text-sm text-red-600">{{ form.title.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                {# Category Field #}
+                <div>
+                    <label for="{{ form.category.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        Category
+                    </label>
+                    {{ form.category }}
+                    {% if form.category.errors %}
+                        <p class="mt-2 text-sm text-red-600">{{ form.category.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                {# Content Field #}
+                <div>
+                    <label for="{{ form.content.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        Content
+                    </label>
+                    {{ form.content }}
+                    {% if form.content.errors %}
+                        <p class="mt-2 text-sm text-red-600">{{ form.content.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                {# Tags Field #}
+                <div>
+                    <label for="{{ form.tags.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        Tags
+                    </label>
+                    {{ form.tags }}
+                    {% if form.tags.errors %}
+                        <p class="mt-2 text-sm text-red-600">{{ form.tags.errors.0 }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-sm text-gray-500">Separate tags with commas</p>
+                </div>
+
+                {# File Attachments #}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">
+                        Attachments
+                    </label>
+                    <div class="file-upload">
+                        {{ form.attachments }}
+                        <p class="text-sm text-gray-500 mt-1">{{ form.attachments.help_text }}</p>
+                    </div>
+                    {% if form.instance.pk %}
+                        <div class="file-list">
+                            {% for attachment in form.instance.attachments.all %}
+                                <div class="file-item">
+                                    <span class="file-name">
+                                        {{ attachment.name }} ({{ attachment.human_readable_size }})
+                                    </span>
+                                    <button type="button" 
+                                            class="remove-file"
+                                            data-attachment-id="{{ attachment.id }}">
+                                        Remove
+                                    </button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                {# Visibility Toggle #}
+                <div class="flex items-center">
+                    {{ form.is_public }}
+                    <label for="{{ form.is_public.id_for_label }}" class="ml-2 block text-sm text-gray-900">
+                        Make this document public
+                    </label>
+                </div>
+
+                {# Submit Button #}
+                <div class="flex justify-end">
+                    <button type="submit"
+                            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        {% if form.instance.pk %}
+                            Save Changes
+                        {% else %}
+                            Create Document
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle file selection display
+    const fileInput = document.querySelector('input[type="file"]');
+    const fileList = document.querySelector('.file-list');
+
+    fileInput.addEventListener('change', function() {
+        const files = Array.from(this.files);
+        const fileNames = files.map(file => {
+            return `<div class="file-item">
+                <span class="file-name">${file.name}</span>
+            </div>`;
+        }).join('');
+        
+        if (fileList) {
+            fileList.insertAdjacentHTML('beforeend', fileNames);
+        } else {
+            const newFileList = document.createElement('div');
+            newFileList.className = 'file-list';
+            newFileList.innerHTML = fileNames;
+            fileInput.parentElement.appendChild(newFileList);
+        }
+    });
+
+    // Handle existing attachment removal
+    const removeButtons = document.querySelectorAll('.remove-file');
+    removeButtons.forEach(button => {
+        button.addEventListener('click', async function() {
+            const attachmentId = this.dataset.attachmentId;
+            if (confirm('Are you sure you want to remove this attachment?')) {
+                try {
+                    const response = await fetch(`/docs/attachment/${attachmentId}/delete/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        },
+                    });
+                    
+                    if (response.ok) {
+                        this.closest('.file-item').remove();
+                    } else {
+                        alert('Failed to remove attachment');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to remove attachment');
+                }
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
