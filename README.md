@@ -1,134 +1,139 @@
-# Documentation Management System
+# DocFlow - Modern Documentation Management System
 
-A robust web application for creating, organizing, and searching documentation with user authentication and admin capabilities.
+A modern, user-friendly web application for creating, organizing, and managing documentation with integrated URL summarization capabilities.
+
+![DocFlow Logo](docs/logo.png)
 
 ## Features
 
-- User Authentication (Register, Login, Logout)
-- Documentation Management
-  - Create and edit documentation entries
-  - Organize content by topics/categories
-  - Rich text editor support
-  - File attachments
-- Advanced Search Functionality
-  - Full-text search
-  - Filter by topics
-  - Sort by date/relevance
-- Admin Interface
-  - User management
-  - Content moderation
-  - Analytics dashboard
+### Documentation Management
+- Create and edit documentation with a rich text editor
+- Organize content with categories and tags
+- File attachments support
+- Advanced search functionality
+- Public and private document support
+
+### URL Summarizer
+- Summarize web articles and content
+- Extract key information from URLs
+- Save summaries as documentation
+- AI-powered content analysis
+
+### Modern UI/UX
+- Clean, modern interface with gradient accents
+- Responsive design for all devices
+- Smooth transitions and animations
+- Intuitive navigation system
+- Dark/light mode support (coming soon)
+
+### User Management
+- Secure authentication system
+- User profiles and preferences
+- Role-based access control
+- Admin dashboard for user management
 
 ## Tech Stack
 
-- **Backend Framework**: Django 5.0
+### Backend
+- **Framework**: Django 5.0
 - **Database**: PostgreSQL 16
-- **Frontend**:
-  - HTML5
-  - CSS (Tailwind CSS 3.4)
-  - JavaScript (ES6+)
-- **Additional Tools**:
-  - Django REST Framework 3.14
-  - Django Crispy Forms
-  - Python-dotenv
-  - Markdown Support
+- **API**: Django REST Framework 3.14
+- **AI Integration**: OpenAI GPT-3.5
+
+### Frontend
+- **CSS Framework**: Tailwind CSS 3.4
+- **Icons**: Font Awesome 5
+- **JavaScript**: ES6+
+- **Rich Text Editor**: CKEditor 4
+
+### Development Tools
+- **Version Control**: Git
+- **Package Management**: pip, npm
+- **Environment**: python-dotenv
+- **Testing**: pytest
 
 ## Prerequisites
 
 - Python 3.11+
 - PostgreSQL 16
 - Node.js 20+ (for Tailwind CSS)
-- pip (Python package manager)
+- Git
 
-## Installation
+## Quick Start
 
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd documentation-system
-```
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Odindiallo/Sommaryweb.git
+   cd Sommaryweb
+   ```
 
-2. Create and activate virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
+2. **Set up Python environment**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   pip install -r requirements.txt
+   ```
 
-3. Install Python dependencies:
-```bash
-pip install -r requirements.txt
-```
+3. **Configure environment**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your settings:
+   # - Database credentials
+   # - Secret key
+   # - OpenAI API key
+   ```
 
-4. Install frontend dependencies:
-```bash
-npm install
-```
+4. **Initialize database**
+   ```bash
+   python manage.py migrate
+   python manage.py createsuperuser
+   ```
 
-5. Configure environment variables:
-```bash
-cp .env.example .env
-# Edit .env file with your configuration
-```
-
-6. Run database migrations:
-```bash
-python manage.py migrate
-```
-
-7. Create superuser:
-```bash
-python manage.py createsuperuser
-```
-
-8. Start development server:
-```bash
-python manage.py runserver
-```
+5. **Run development server**
+   ```bash
+   python manage.py runserver
+   ```
 
 ## Project Structure
 
 ```
-documentation_system/
-├── docs/                    # Project documentation
-├── core/                    # Main Django application
-│   ├── static/             # Static files (CSS, JS, images)
-│   ├── templates/          # HTML templates
-│   └── ...
-├── documentation/          # Documentation app
-│   ├── models.py          # Data models
-│   ├── views.py           # View logic
-│   ├── urls.py            # URL routing
-│   └── ...
-├── users/                  # User management app
-├── manage.py              # Django management script
-├── requirements.txt       # Python dependencies
-└── README.md             # Project documentation
+docflow/
+├── config/                 # Project configuration
+│   ├── settings.py        # Django settings
+│   └── urls.py           # Main URL routing
+├── core/                  # Core functionality
+│   ├── views.py          # Main views
+│   └── templates/        # Base templates
+├── documentation/         # Documentation app
+│   ├── models.py         # Document models
+│   ├── views.py          # Document views
+│   └── templates/        # Document templates
+├── url_summarizer/        # URL Summarizer app
+│   ├── views.py          # Summarizer logic
+│   └── templates/        # Summarizer templates
+├── users/                 # User management
+│   ├── models.py         # User models
+│   └── views.py          # Auth views
+└── static/               # Static assets
+    ├── css/              # Compiled CSS
+    └── js/               # JavaScript files
 ```
-
-## Development Guidelines
-
-- Follow PEP 8 style guide for Python code
-- Use meaningful variable and function names
-- Write comprehensive docstrings and comments
-- Create unit tests for new features
-- Follow Git flow for version control
-
-## API Documentation
-
-The API documentation will be available at `/api/docs/` after running the server.
 
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Support
+## Acknowledgments
 
-For support, please open an issue in the repository or contact the development team.
+- [Django](https://www.djangoproject.com/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [OpenAI](https://openai.com/)
+- [Font Awesome](https://fontawesome.com/)
