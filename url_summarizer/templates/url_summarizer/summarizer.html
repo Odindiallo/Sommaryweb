@@ -37,6 +37,10 @@
                         class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                     Summarize
                 </button>
+                <button onclick="analyzeWebsite()"
+                        class="bg-secondary-600 text-white px-4 py-2 rounded-md hover:bg-secondary-700 focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:ring-offset-2">
+                    Analyze Design
+                </button>
             </div>
         </div>
 
@@ -70,6 +74,23 @@
         <!-- Error Message -->
         <div id="error-message" class="hidden">
             <div class="bg-red-50 text-red-700 p-4 rounded-md"></div>
+        </div>
+
+        <!-- Website Analysis Results Modal -->
+        <div class="modal fade" id="analysisModal" tabindex="-1" aria-labelledby="analysisModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="analysisModalLabel">Website Analysis Results</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="analysisResults">
+                            <!-- Analysis results will be displayed here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -153,5 +174,93 @@ async function createDocument() {
         errorMessage.textContent = error.message;
         errorMessage.classList.remove('hidden');
     }
-}</script>
+}
+
+async function analyzeWebsite() {
+    const urlInput = document.getElementById('url-input');
+    const url = urlInput.value.trim();
+    
+    if (!url) {
+        alert('Please enter a URL first');
+        return;
+    }
+    
+    try {
+        const response = await fetch('{% url "url_summarizer:analyze_website" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ url })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            displayAnalysisResults(data.analysis);
+        } else {
+            alert('Error analyzing website: ' + data.error);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error analyzing website. Please try again.');
+    }
+}
+
+function displayAnalysisResults(analysis) {
+    const resultsDiv = document.getElementById('analysisResults');
+    
+    let html = `
+        <h6>Design Elements</h6>
+        <div class="mb-3">
+            <strong>Colors:</strong>
+            <div class="d-flex flex-wrap gap-2">
+                ${analysis.design_elements.colors.map(color => `
+                    <div class="color-sample" style="background-color: ${color}; width: 30px; height: 30px; border: 1px solid #ddd;" title="${color}"></div>
+                `).join('')}
+            </div>
+        </div>
+        
+        <div class="mb-3">
+            <strong>Typography:</strong>
+            <ul class="list-unstyled">
+                ${analysis.design_elements.typography.map(font => `<li>${font}</li>`).join('')}
+            </ul>
+        </div>
+        
+        <div class="mb-3">
+            <strong>Layout:</strong>
+            <ul class="list-unstyled">
+                <li>Grid Usage: ${analysis.design_elements.layout.grid_usage ? 'Yes' : 'No'}</li>
+                <li>Flexbox Usage: ${analysis.design_elements.layout.flexbox_usage ? 'Yes' : 'No'}</li>
+                <li>Main Sections: ${analysis.design_elements.layout.main_sections.join(', ')}</li>
+            </ul>
+        </div>
+        
+        <h6>Assets</h6>
+        <div class="mb-3">
+            <strong>Images:</strong> ${analysis.assets.images.length} found
+            <strong>Icons:</strong> ${analysis.assets.icons.length} found
+            <strong>Backgrounds:</strong> ${analysis.assets.backgrounds.length} found
+        </div>
+        
+        <h6>Structure</h6>
+        <div class="mb-3">
+            <ul class="list-unstyled">
+                <li>Meta Tags: ${analysis.structure.meta_tags}</li>
+                <li>Scripts: ${analysis.structure.scripts}</li>
+                <li>Styles: ${analysis.structure.styles}</li>
+                <li>Forms: ${analysis.structure.forms}</li>
+            </ul>
+        </div>
+    `;
+    
+    resultsDiv.innerHTML = html;
+    
+    // Show the modal
+    const modal = new bootstrap.Modal(document.getElementById('analysisModal'));
+    modal.show();
+}
+</script>
 {% endblock %}

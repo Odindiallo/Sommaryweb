@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils.text import slugify
 import json
 from .crew import URLSummarizer
+from .website_analyzer import WebsiteAnalyzer
 from documentation.models import Document
 from dotenv import load_dotenv
 import os
@@ -52,6 +53,11 @@ def extract_markdown_content(html_content):
 def summarizer_view(request):
     return render(request, 'url_summarizer/summarizer.html')
 
+@login_required
+def website_analyzer_view(request):
+    """Render the website analyzer page."""
+    return render(request, 'url_summarizer/website_analyzer.html')
+
 @csrf_exempt
 @require_http_methods(["POST"])
 def summarize_url(request):
@@ -77,6 +83,31 @@ def summarize_url(request):
         return JsonResponse({'error': 'Invalid JSON data'}, status=400)
     except Exception as e:
         return JsonResponse({'error': f'Unexpected error: {str(e)}'}, status=500)
+
+@csrf_exempt
+@require_http_methods(["POST"])
+@login_required
+def analyze_website(request):
+    """Analyze website design and structure."""
+    try:
+        data = json.loads(request.body)
+        url = data.get('url')
+        
+        if not url:
+            return JsonResponse({'error': 'URL is required'}, status=400)
+            
+        analyzer = WebsiteAnalyzer()
+        analysis = analyzer.analyze_website(url)
+        
+        return JsonResponse({
+            'success': True,
+            'analysis': analysis
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
 
 @csrf_exempt
 @require_http_methods(["POST"])

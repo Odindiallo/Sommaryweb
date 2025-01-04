@@ -21,6 +21,7 @@ from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 from core.views import HomeView
 from documentation.admin import admin_site
+from url_summarizer import views as url_summarizer_views
 
 urlpatterns = [
     path('admin/', admin_site.urls),  # Use our custom admin site
@@ -28,7 +29,7 @@ urlpatterns = [
     path('docs/', include('documentation.urls')),  # Documentation under /docs/
     path('users/', include('users.urls')),
     path('summarizer/', include('url_summarizer.urls', namespace='url_summarizer')),  
-    
+    path('url-summarizer/analyze-website/', url_summarizer_views.analyze_website, name='analyze_website'),
     # API Documentation
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),

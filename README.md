@@ -18,6 +18,12 @@ A modern, user-friendly web application for creating, organizing, and managing d
 - Extract key information from URLs
 - Save summaries as documentation
 - AI-powered content analysis
+- Website design analysis with:
+  - Color palette extraction
+  - Typography analysis
+  - Layout structure detection
+  - Asset inventory (images, icons)
+  - HTML structure analysis
 
 ### Modern UI/UX
 - Clean, modern interface with gradient accents
