@@ -14,22 +14,20 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
 from django.urls import path, include
+from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
-from drf_spectacular.views import (
-    SpectacularAPIView,
-    SpectacularRedocView,
-    SpectacularSwaggerView,
-)
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+from core.views import HomeView
 from documentation.admin import admin_site
 
 urlpatterns = [
     path('admin/', admin_site.urls),  # Use our custom admin site
-    path('', include('core.urls')),
-    path('docs/', include('documentation.urls')),
+    path('', HomeView.as_view(), name='home'),  # Home page as main URL
+    path('docs/', include('documentation.urls')),  # Documentation under /docs/
     path('users/', include('users.urls')),
+    path('summarizer/', include('url_summarizer.urls', namespace='url_summarizer')),  
     
     # API Documentation
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),

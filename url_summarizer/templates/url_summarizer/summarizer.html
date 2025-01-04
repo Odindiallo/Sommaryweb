@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css">
+<style>
+    .markdown-body {
+        box-sizing: border-box;
+        min-width: 200px;
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 45px;
+    }
+    
+    @media (max-width: 767px) {
+        .markdown-body {
+            padding: 15px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block title %}URL Summarizer{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto p-6">
+    <h1 class="text-3xl font-bold mb-8">URL Summarizer</h1>
+    
+    <div class="bg-white shadow rounded-lg p-6">
+        <div class="mb-6">
+            <label for="url-input" class="block text-sm font-medium text-gray-700 mb-2">Enter URL</label>
+            <div class="flex gap-2">
+                <input type="url" id="url-input" 
+                       class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                       placeholder="https://example.com">
+                <button onclick="summarizeURL()" 
+                        class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                    Summarize
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loading-spinner" class="hidden">
+            <div class="flex items-center justify-center py-4">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                <span class="ml-2 text-gray-600">Generating detailed summary...</span>
+            </div>
+        </div>
+
+        <!-- Summary Result -->
+        <div id="summary-result" class="hidden">
+            <div class="mb-4">
+                <h2 class="text-lg font-semibold text-gray-900 mb-2">Article Summary</h2>
+                <div id="summary-content" class="markdown-body prose max-w-none bg-gray-50 rounded-md p-4"></div>
+            </div>
+            
+            <div class="mb-4">
+                <label for="doc-title" class="block text-sm font-medium text-gray-700 mb-2">Document Title</label>
+                <input type="text" id="doc-title" 
+                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+            </div>
+            
+            <button onclick="createDocument()" 
+                    class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                Create Document
+            </button>
+        </div>
+
+        <!-- Error Message -->
+        <div id="error-message" class="hidden">
+            <div class="bg-red-50 text-red-700 p-4 rounded-md"></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.2/marked.min.js"></script>
+<script>
+async function summarizeURL() {
+    const urlInput = document.getElementById('url-input');
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const summaryResult = document.getElementById('summary-result');
+    const summaryContent = document.getElementById('summary-content');
+    const docTitle = document.getElementById('doc-title');
+    const errorMessage = document.getElementById('error-message');
+
+    // Reset UI
+    loadingSpinner.classList.remove('hidden');
+    summaryResult.classList.add('hidden');
+    errorMessage.classList.add('hidden');
+
+    try {
+        const response = await fetch('{% url "url_summarizer:summarize_url" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                url: urlInput.value
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to generate summary');
+        }
+
+        // Convert markdown to HTML
+        summaryContent.innerHTML = marked.parse(data.summary);
+        summaryContent.setAttribute('data-markdown', data.summary);  // Store the raw markdown
+        
+        // Extract title from the first heading or use URL
+        const firstHeading = data.summary.match(/^#\s+(.+)$/m);
+        const urlObj = new URL(urlInput.value);
+        docTitle.value = firstHeading ? firstHeading[1] : `Summary of ${urlObj.hostname}${urlObj.pathname}`;
+        
+        summaryResult.classList.remove('hidden');
+    } catch (error) {
+        errorMessage.textContent = error.message;
+        errorMessage.classList.remove('hidden');
+    } finally {
+        loadingSpinner.classList.add('hidden');
+    }
+}
+
+async function createDocument() {
+    const summaryContent = document.getElementById('summary-content');
+    const docTitle = document.getElementById('doc-title');
+    const errorMessage = document.getElementById('error-message');
+
+    try {
+        const response = await fetch('{% url "url_summarizer:create_document" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                summary: summaryContent.getAttribute('data-markdown'),  // Get the raw markdown
+                title: docTitle.value || 'URL Summary'
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to create document');
+        }
+
+        // Redirect to the document list page
+        window.location.href = '{% url "documentation:document_list" %}';
+    } catch (error) {
+        errorMessage.textContent = error.message;
+        errorMessage.classList.remove('hidden');
+    }
+}</script>
+{% endblock %}

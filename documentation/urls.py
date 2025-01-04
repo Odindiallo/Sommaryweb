@@ -14,9 +14,9 @@ urlpatterns = [
     # Document URLs
     path('', views.DocumentListView.as_view(), name='document_list'),
     path('create/', views.DocumentCreateView.as_view(), name='document_create'),
-    path('<slug:slug>/', views.DocumentDetailView.as_view(), name='document_detail'),
-    path('<slug:slug>/update/', views.DocumentUpdateView.as_view(), name='document_update'),
-    path('<slug:slug>/delete/', views.DocumentDeleteView.as_view(), name='document_delete'),
+    path('document/<slug:slug>/', views.DocumentDetailView.as_view(), name='document_detail'),
+    path('document/<slug:slug>/update/', views.DocumentUpdateView.as_view(), name='document_update'),
+    path('document/<slug:slug>/delete/', views.DocumentDeleteView.as_view(), name='document_delete'),
     
     # Category URLs
     path('categories/', views.CategoryListView.as_view(), name='category_list'),

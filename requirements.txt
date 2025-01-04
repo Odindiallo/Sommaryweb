@@ -12,3 +12,7 @@ pillow==10.1.0
 django-taggit==4.0.0
 django-ckeditor==6.7.1  # Updated to latest version with CKEditor 4.25.0-lts
 django-cors-headers==4.3.1
+crewai==0.11.0
+beautifulsoup4==4.12.2
+requests==2.31.0
+duckduckgo-search==4.4.2

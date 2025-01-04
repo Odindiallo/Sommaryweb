@@ -83,10 +83,12 @@
                     {% for document in documents %}
                         <article class="border-b border-gray-200 pb-6 last:border-b-0 last:pb-0">
                             <div class="flex items-center justify-between">
-                                <h2 class="text-xl font-semibold text-gray-900">
+                                <h3 class="text-lg font-semibold mb-2">
                                     <a href="{% url 'documentation:document_detail' document.slug %}" 
-                                       class="hover:text-indigo-600">{{ document.title }}</a>
-                                </h2>
+                                       class="text-blue-600 hover:text-blue-800">
+                                        {{ document.title }}
+                                    </a>
+                                </h3>
                                 <div class="flex items-center text-sm text-gray-500">
                                     <svg class="h-5 w-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 

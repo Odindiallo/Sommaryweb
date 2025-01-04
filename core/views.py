@@ -22,7 +22,7 @@ class HomeView(TemplateView):
         # Get statistics
         context['total_documents'] = Document.objects.count()
         context['total_categories'] = Category.objects.count()
-        context['total_authors'] = get_user_model().objects.filter(document__isnull=False).distinct().count()
+        context['total_authors'] = get_user_model().objects.filter(documents__isnull=False).distinct().count()
         context['total_tags'] = Tag.objects.count()
         
         return context

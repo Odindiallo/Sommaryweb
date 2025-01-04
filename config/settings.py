@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'core.apps.CoreConfig',
     'users.apps.UsersConfig',
     'documentation.apps.DocumentationConfig',
+    'url_summarizer.apps.UrlSummarizerConfig',
 ]
 
 MIDDLEWARE = [
